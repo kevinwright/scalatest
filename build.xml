@@ -1,0 +1,675 @@
+<project name="ScalaTest" default="dist" basedir="."
+         xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+    <!-- set global properties for this build -->
+    <property name="scalasrc" value="src/main/scala" />
+    <property name="javasrc" value="src/main/java" />
+    <property name="scalasrc.test" value="src/test/scala" />
+    <property name="javasrc.test" value="src/test/java" />
+    <property name="scalasrc.examples" value="src/examples/scala" />
+    <property name="javasrc.examples" value="src/examples/java" />
+    <property name="resources" value="src/main/resources" />
+    <property name="images" value="${resources}/images" />
+    <property name="build" value="target" />
+    <property name="jar.contents" value="${build}/jar_contents" />
+    <!-- classes go in jar.contents. redundant, but makes the rest of build.xml easier to read -->
+    <property name="classes" value="${jar.contents}" />
+    <property name="generators" value="src/generators/scala" />
+    <property name="build.generated.src" value="${build}/generated/src/main/scala" />
+    <property name="build.generated.tests" value="${build}/generated/src/test/scala" />
+    <property name="build.tests" value="${build}/tests" />
+    <property name="build.tests.jar" value="${build}/tests.jar" />
+    <property name="build.examples" value="${build}/examples" />
+    <property name="build.generators" value="${build}/generators" />
+    <property name="build.coverage" value="${build}/coverage" />
+    <property name="dist" value="${build}/dist" />
+    <property name="instrumented" value="${build}/instrumented" />
+    <property name="doc" value="${build}/doc" />
+    <property name="jdoc" value="${build}/jdoc" />
+    <property name="zipper" value="zipper" />
+    <property name="project.name" value="ScalaTest" />
+    <property name="release" value="1.2-SNAPSHOT" />
+    <property name="demo" value="${build}/demo" />
+    <property name="demodoc" value="${demo}/example/javadoc" />
+    <property name="example" value="${demo}/example" />
+    <property name="lib" value="lib" />
+    <property name="jvmargs" value="-Xmx2000M -Xss10M"/>
+
+    <!--
+  <property name="build.compiler" value="jikes"/>
+  -->
+
+    <target name="init">
+        <!-- Create the time stamp -->
+        <tstamp />
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${jar.contents}" />
+        <mkdir dir="${build.tests}" />
+        <mkdir dir="${build.examples}" />
+        <mkdir dir="${build.generators}" />
+        <mkdir dir="${build.generated.src}" />
+        <mkdir dir="${build.generated.tests}" />
+        <mkdir dir="${dist}" />
+        <mkdir dir="${demodoc}" />
+        <mkdir dir="${doc}" />
+        <mkdir dir="${jdoc}" />
+        <mkdir dir="${jdoc}" />
+
+        <path id="lib.path">
+            <fileset dir="${lib}"><include name="**/*.jar" /></fileset>
+        </path>        
+        
+        <path id="build.class.path">
+            <pathelement location="${classes}" />
+            <path refid="lib.path"></path>
+        </path>
+
+        <!-- this is the class path used to run ScalaTest to test itself, in the "test" target -->
+        <path id="test.class.path">
+            <pathelement location="${classes}" />
+            <path refid="lib.path"></path>
+        </path>
+        
+        <path id="coverage.class.path">
+            <pathelement location="${instrumented}" />
+            <pathelement location="${classes}" />
+            <path refid="lib.path"></path>
+        </path>
+     
+        <path id="build.test.class.path">
+            <pathelement location="${classes}" />
+            <pathelement location="${build.tests}" />
+            <path refid="lib.path"></path>
+        </path>
+
+        <path id="build.generators.class.path">
+            <pathelement location="${lib}/stringtemplate.jar" />
+            <pathelement location="${lib}/scala-library.jar" />
+        </path>
+
+        <path id="run.generators.class.path">
+            <pathelement location="${build.generators}" />
+            <pathelement location="${lib}/scala-library.jar" />
+            <pathelement location="${lib}/stringtemplate.jar" />
+            <pathelement location="${lib}/antlr-2.7.7.jar" />
+        </path>
+
+        <taskdef resource="scala/tools/ant/antlib.xml">
+            <classpath>
+                <pathelement location="${lib}/scala-compiler.jar" />
+                <pathelement location="${lib}/scala-library.jar" />
+            </classpath>
+        </taskdef>
+
+        <path id="scaladoc.source.path">
+            <pathelement location="${scalasrc}" />
+            <pathelement location="${build.generated.src}" />
+        </path>
+
+        <path id="cobertura.class.path">
+          <pathelement location="${lib}/cobertura.jar" />
+          <pathelement location="${lib}/asm-3.0.jar" />
+          <pathelement location="${lib}/asm-tree-3.0.jar" />
+          <pathelement location="${lib}/jakarta-oro-2.0.8.jar" />
+          <pathelement location="${lib}/log4j-1.2.9.jar" />
+        </path>
+
+    </target>
+
+    <target name="taskdefscalatest">
+        <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
+            <classpath>
+                <pathelement location="${classes}" />
+                <pathelement location="${lib}/scala-library.jar" />
+                <pathelement location="${lib}/junit-4.4.jar" />
+                <pathelement location="${lib}/scalacheck_2.8.0-1.7.jar" />
+                <pathelement location="${lib}/mockito-all-1.6.jar" />
+                <pathelement location="${lib}/testng-5.7-jdk15.jar" />
+                <pathelement location="${lib}/jmock-2.5.1.jar" />
+                <pathelement location="${lib}/easymock-2.5.1.jar" />
+                <pathelement location="${lib}/easymockclassextension-2.4.jar" />
+                <pathelement location="${lib}/cglib-nodep-2.2.jar" />
+                <pathelement location="${lib}/hamcrest-all-1.1.jar" />
+                <pathelement location="${lib}/commons-io-1.3.2.jar" />
+                <pathelement location="${lib}/jmock-legacy-2.5.1.jar" />
+                <pathelement location="${lib}/objenesis-1.0.jar" />
+                <pathelement location="${lib}/test-interface-0.5.jar" />
+            </classpath>
+        </taskdef>
+    </target>
+
+    <target name="clean" depends="init">
+        <delete dir="${build}" />
+        <delete dir="test-output" quiet="true" />
+    </target>
+
+    <target name="gencode" depends="init">
+        <!-- First, compile the code generator from ${generators} into ${build.generators} -->
+        <scalac srcdir="${generators}" destdir="${build.generators}" target="jvm-1.5" classpathref="build.generators.class.path" />
+        <!-- Then, run it. -->
+        <java classname="GenMustMatchers" classpathref="run.generators.class.path" fork="false" />
+        <java classname="GenMustMatchersTests" classpathref="run.generators.class.path" fork="false" />
+    </target>
+
+    <target name="compile" depends="compile-main, compile-tests, compile-examples"/>
+
+    <target name="compile-main" depends="init">
+
+        <!-- If ever want to see the typer output, add -Xprint:typer to the addparams like this: -->
+        <!--<scalac srcdir="${scalasrc}" destdir="${classes}" target="jvm-1.5" classpathref="build.class.path" addparams="-no-specialization -Xprint:typer" fork="true" jvmargs="${jvmargs}" />-->
+
+        <!-- Compile the Scala code from ${scalasrc} into ${classes}. Scalac will parse the referenced .java files. -->
+        <scalac srcdir="${scalasrc}" destdir="${classes}" target="jvm-1.5" classpathref="build.class.path" addparams="-no-specialization" fork="true" jvmargs="${jvmargs}" />
+
+        <!-- Compile the Scala code from ${build.generated.src} into ${classes}. Scalac will parse any referenced .java files. -->
+        <scalac srcdir="${build.generated.src}" destdir="${classes}" target="jvm-1.5" classpathref="build.class.path" />
+
+        <!-- Compile the Java code from ${javasrc} into ${classes} -->
+        <javac srcdir="${javasrc}" destdir="${classes}" memoryMaximumSize="1500M" fork="true" classpathref="build.class.path" debug="yes">
+            <include name="org/scalatest/Ignore.java" />
+            <include name="org/scalatest/tools/ScalaTestTask.java" />
+        </javac>
+    </target>
+
+    <target name="compile-tests" depends="compile-main">
+
+        <!-- Compile the Scala code from ${scalasrc.test} into ${build.tests} -->
+        <scalac srcdir="${scalasrc.test}:${javasrc.test}" destdir="${build.tests}" target="jvm-1.5" classpathref="build.test.class.path" addparams="-no-specialization" fork="true" jvmargs="${jvmargs} -XX:+UseConcMarkSweepGC"/>
+
+        <!-- Compile the Scala code from ${build.generated.tests} into ${classes}. Scalac will parse any referenced .java files. -->
+        <scalac srcdir="${build.generated.tests}" destdir="${build.tests}" target="jvm-1.5" classpathref="build.test.class.path" addparams="-no-specialization" fork="true" jvmargs="${jvmargs}" />
+
+        <!-- Compile the Java code from ${javasrc.test} into ${build.tests} -->
+        <javac srcdir="${javasrc.test}" destdir="${build.tests}" memoryMaximumSize="1500M" fork="true" classpath="${classes}:${lib}/scala-library.jar:${lib}/junit-4.4.jar" debug="yes" />
+    </target>
+
+    <target name="compile-examples" depends="compile-main">
+
+        <!-- Compile the Scala code from ${scalasrc.examples} into ${build.examples} -->
+        <scalac srcdir="${scalasrc.examples}:${javasrc.examples}" destdir="${build.examples}" target="jvm-1.5" classpathref="build.test.class.path" addparams="-no-specialization" fork="true" jvmargs="${jvmargs} -XX:+UseConcMarkSweepGC"/>
+
+        <!-- Compile the Java code from ${examples} into ${build.examples} -->
+        <javac srcdir="${javasrc.examples}" destdir="${build.examples}" classpath="${classes}:${lib}/easymock-2.5.1.jar:${lib}/scala-library.jar" debug="yes" />
+    </target>
+
+    <!-- Compile demo into its own directory. I.e., the class files will sit alongside the java files
+       so that people can more easily look at them. All of these source files are used as demonstrations
+       of something, usually described in articles on Artima.com. -->
+    <target name="demo" depends="dist">
+        <javac srcdir="${example}" destdir="${example}" classpath="${classes}:${lib}/junit-3.8.1.jar" debug="yes" />
+    </target>
+
+    <target name="jartests" depends="compile">
+      <jar jarfile="${build.tests.jar}" basedir="${build.tests}" includes="org/scalatest/**/*.class" />
+    </target>
+
+    <target name="doc" depends="compile-main">
+        <javadoc sourcepath="${javasrc}" destdir="${jdoc}" packagenames="org.scalatest,org.scalatest.tools" classpathref="build.class.path" windowtitle="ScalaTest ${release}" doctitle="ScalaTest ${release}" bottom="Copyright (C) 2001-2010 Artima, Inc. All rights reserved." />
+
+        <scaladoc addparams="-no-specialization" srcref="scaladoc.source.path" destdir="${doc}" classpathref="build.class.path" doctitle="ScalaTest ${release}">
+            <include name="**/*.scala" />
+        </scaladoc>
+        <!--
+      <javadoc sourcepath="${example}"
+        destdir="${demodoc}"
+        packagenames="com.artima.examples.*"
+        classpath="${classes}:${lib}/junit-4.1.jar"
+        windowtitle="ScalaTest Examples ${release}"
+        doctitle="ScalaTest Examples ${release}"
+        bottom="Copyright (C) 2001-2009 Artima, Inc. All rights reserved."/>
+-->
+    </target>
+
+    <target name="dist" depends="compile">
+        <!-- Create the distribution directory -->
+        <mkdir dir="${dist}/lib" />
+        <delete file="${dist}/lib/scalatest.jar" />
+
+        <copy file="${resources}/org/scalatest/ScalaTestBundle.properties" todir="${jar.contents}/org/scalatest" />
+        <copy todir="${jar.contents}/images">
+            <fileset dir="${images}" />
+        </copy>
+
+        <!-- Put everything in ${jar.contents} into the MyProject-${DSTAMP}.jar file -->
+        <jar jarfile="${dist}/lib/scalatest.jar" basedir="${jar.contents}">
+            <manifest>
+                <attribute name="Main-Class" value="org.scalatest.tools.Runner" />
+                <attribute name="Class-Path" value="junit-4.1.jar" />
+            </manifest>
+        </jar>
+        <jar jarfile="${dist}/lib/scalatest-wbt.jar" basedir="${build.tests}" includes="org/scalatest/*.class" />
+
+        <echo message="All finished building ${project.name}!" />
+    </target>
+
+    <target name="zipper" depends="allfiles">
+        <delete dir="${zipper}" />
+        <mkdir dir="${zipper}" />
+
+        <copy file="${dist}/lib/scalatest.jar" tofile="${zipper}/scalatest-${release}/scalatest-${release}.jar" />
+        <copy file="${dist}/lib/scalatest-wbt.jar" tofile="${zipper}/scalatest-${release}/scalatest-${release}-tests.jar" />
+
+        <copy file="README.txt" tofile="${zipper}/scalatest-${release}/README.txt" />
+        <copy file="LICENSE" tofile="${zipper}/scalatest-${release}/LICENSE" />
+        <copy file="NOTICE" tofile="${zipper}/scalatest-${release}/NOTICE" />
+
+        <copy todir="${zipper}/scalatest-${release}/doc">
+            <fileset dir="${doc}/" />
+        </copy>
+
+        <copy todir="${zipper}/scalatest-${release}/src">
+            <fileset dir="src/" />
+        </copy>
+
+        <!--
+    <zip zipfile="${zipper}/scalatest-${release}/scalatest-${release}-src.zip" basedir="${src}"/>
+    <zip zipfile="${zipper}/scalatest-${release}/scalatest-${release}-tests-src.zip" basedir="${tests}"/>
+-->
+
+        <zip zipfile="scalatest-${release}.zip" basedir="${zipper}" />
+    </target>
+
+    <target name="copyprops">
+        <copy file="${resources}/org/scalatest/ScalaTestBundle.properties" todir="${jar.contents}/org/scalatest" overwrite="true">
+            <filterset>
+                <filter token="RELEASE" value="${release}" />
+            </filterset>
+        </copy>
+        <copy todir="${jar.contents}/images">
+            <fileset dir="${images}" />
+        </copy>
+    </target>
+
+    <target name="test" depends="compile,copyprops,jartests,taskdefscalatest">
+        <scalatest fork="true" runpath="${build.tests.jar}" parallel="true" haltonfailure="true">
+            <jvmarg value="-XX:MaxPermSize=128m"/>
+            <reporter type="graphic" />
+            <reporter type="junitxml" directory="target"/>
+            <reporter type="stdout" config="D"/>
+            <membersonly package="org.scalatest" />
+            <membersonly package="org.scalatest.fixture" />
+            <membersonly package="org.scalatest.concurrent" />
+            <membersonly package="org.scalatest.testng" />
+            <membersonly package="org.scalatest.junit" />
+            <membersonly package="org.scalatest.events" />
+            <membersonly package="org.scalatest.prop" />
+            <membersonly package="org.scalatest.tools" />
+            <membersonly package="org.scalatest.matchers" />
+            <membersonly package="org.scalatest.mock" />
+            <config name="dbname" value="testdb" />
+        </scalatest>
+    </target>
+
+    <target name="shouldmatcherstest" depends="compile,copyprops,jartests,taskdefscalatest">
+        <scalatest runpath="${build.tests.jar}" concurrent="false" haltonfailure="true">
+            <reporter type="stdout" config="D"/>
+                <suite classname="org.scalatest.matchers.ShouldBeASymbolSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldBeAnSymbolSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldBeMatcherSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldBeNullSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldBePropertyMatcherSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldBeSymbolSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldBehaveLikeSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldContainElementSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldContainKeySpec"/>
+                <suite classname="org.scalatest.matchers.ShouldContainValueSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldEndWithRegexSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldEndWithSubstringSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldEqualSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldFullyMatchSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldHavePropertiesSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldIncludeRegexSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldIncludeSubstringSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldLengthSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldLogicalMatcherExprSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldMatcherSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldOrderedSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldPlusOrMinusSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldSameInstanceAsSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldSizeSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldStartWithRegexSpec"/>
+                <suite classname="org.scalatest.matchers.ShouldStartWithSubstringSpec"/>
+        </scalatest>
+    </target>
+    <target name="mustmatcherstest" depends="compile,copyprops,jartests,taskdefscalatest">
+        <scalatest runpath="${build.tests.jar}" concurrent="false" haltonfailure="true">
+            <reporter type="stdout" config="D"/>
+                <suite classname="org.scalatest.matchers.MustBeASymbolSpec"/>
+                <suite classname="org.scalatest.matchers.MustBeAnSymbolSpec"/>
+                <suite classname="org.scalatest.matchers.MustBeMatcherSpec"/>
+                <suite classname="org.scalatest.matchers.MustBeNullSpec"/>
+                <suite classname="org.scalatest.matchers.MustBePropertyMatcherSpec"/>
+                <suite classname="org.scalatest.matchers.MustBeSymbolSpec"/>
+                <suite classname="org.scalatest.matchers.MustBehaveLikeSpec"/>
+                <suite classname="org.scalatest.matchers.MustContainElementSpec"/>
+                <suite classname="org.scalatest.matchers.MustContainKeySpec"/>
+                <suite classname="org.scalatest.matchers.MustContainValueSpec"/>
+                <suite classname="org.scalatest.matchers.MustEndWithRegexSpec"/>
+                <suite classname="org.scalatest.matchers.MustEndWithSubstringSpec"/>
+                <suite classname="org.scalatest.matchers.MustEqualSpec"/>
+                <suite classname="org.scalatest.matchers.MustFullyMatchSpec"/>
+                <suite classname="org.scalatest.matchers.MustHavePropertiesSpec"/>
+                <suite classname="org.scalatest.matchers.MustIncludeRegexSpec"/>
+                <suite classname="org.scalatest.matchers.MustIncludeSubstringSpec"/>
+                <suite classname="org.scalatest.matchers.MustLengthSpec"/>
+                <suite classname="org.scalatest.matchers.MustLogicalMatcherExprSpec"/>
+                <suite classname="org.scalatest.matchers.MustMatcherSpec"/>
+                <suite classname="org.scalatest.matchers.MustOrderedSpec"/>
+                <suite classname="org.scalatest.matchers.MustPlusOrMinusSpec"/>
+                <suite classname="org.scalatest.matchers.MustSameInstanceAsSpec"/>
+                <suite classname="org.scalatest.matchers.MustSizeSpec"/>
+                <suite classname="org.scalatest.matchers.MustStartWithRegexSpec"/>
+                <suite classname="org.scalatest.matchers.MustStartWithSubstringSpec"/>
+        </scalatest>
+    </target>
+
+    <target name="examples" depends="compile-main,compile-examples,copyprops,taskdefscalatest">
+        <scalatest runpath="${build.examples}" concurrent="false" haltonfailure="true">
+            <reporter type="graphic"/>
+            <reporter type="stdout"/>
+<!--
+            <suite classname="org.scalatestexamples.ParallelTestExecutionExampleSpec" />
+-->
+            <membersonly package="org.scalatestexamples" />
+            <membersonly package="org.scalatestexamples.concurrent" />
+            <membersonly package="org.scalatestexamples.fixture" />
+            <membersonly package="org.scalatestexamples.matchers" />
+        </scalatest>
+    </target>
+
+    <target name="coverage" depends="compile,copyprops,instrument,jartests">
+        <java classname="org.scalatest.tools.Runner" classpathref="coverage.class.path" fork="true">
+
+            <arg value="-p" />
+            <arg value="${build.tests.jar} ${classes}" />
+
+            <arg value="-o" />
+
+            <arg value="-m" />
+            <arg value="org.scalatest" />
+
+            <arg value="-m" />
+            <arg value="org.scalatest.fixture" />
+
+            <arg value="-m" />
+            <arg value="org.scalatest.concurrent" />
+
+            <arg value="-m" />
+            <arg value="org.scalatest.matchers" />
+
+            <arg value="-m" />
+            <arg value="org.scalatest.testng" />
+
+            <arg value="-m" />
+            <arg value="org.scalatest.junit" />
+
+            <arg value="-m" />
+            <arg value="org.scalatest.events" />
+
+            <arg value="-m" />
+            <arg value="org.scalatest.prop" />
+
+            <arg value="-m" />
+            <arg value="org.scalatest.tools" />
+
+            <arg value="-m" />
+            <arg value="org.scalatest.mock" />
+<!--
+            <arg value="-s" />
+            <arg value="org.scalatest.concurrent.ConductorSuite" />
+-->
+        </java>
+        <echo message="starting cobertura-report..." />
+        <cobertura-report srcdir="${scalasrc}" destdir="${build.coverage}"/>
+        <echo message="... finished cobertura-report" />
+    </target>
+
+    <target name="bvtest" depends="compile-main,compile-tests,copyprops,taskdefscalatest">
+        <scalatest runpath="${build.tests};${classes}" haltonfailure="true">
+            <reporter type="graphic"/>
+            <reporter type="stdout" config="NF"/>
+
+            <suite classname="org.scalatest.SuiteSuite7" />
+<!--
+            <suite classname="org.scalatest.FunSuiteSuite" />
+
+            <suite classname="org.scalatest.SuiteSpec" />
+            <suite classname="org.scalatest.FunSuiteSpec" />
+            <suite classname="org.scalatest.SpecSpec" />
+            <suite classname="org.scalatest.FlatSpecSpec" />
+            <suite classname="org.scalatest.WordSpecSpec" />
+            <suite classname="org.scalatest.FeatureSpecSpec" />
+
+            <suite classname="org.scalatest.fixture.FixtureSuiteSpec" />
+            <suite classname="org.scalatest.fixture.FixtureFunSuiteSpec" />
+            <suite classname="org.scalatest.fixture.FixtureSpecSpec" />
+            <suite classname="org.scalatest.fixture.FixtureFlatSpecSpec" />
+            <suite classname="org.scalatest.fixture.FixtureWordSpecSpec" />
+            <suite classname="org.scalatest.fixture.FixtureFeatureSpecSpec" /> 
+            <membersonly package="org.scalatest.concurrent" />
+            <suite classname="org.scalatest.concurrent.ConductorSuite" />
+            <suite classname="org.scalatest.fixture.FixtureFlatSpecSuite" />
+            <suite classname="org.scalatest.FlatSpecSpec" />
+            <suite classname="org.scalatest.verb.CanVerbSuite" />
+            <suite classname="org.scalatest.fixture.FixtureFeatureSpecSuite" />
+            <suite classname="org.scalatest.fixture.FixtureSpecSuite" />
+            <suite classname="org.scalatest.fixture.FixtureWordSpecSuite" />
+            <suite classname="org.scalatest.fixture.FixtureFunSuiteSpec" />
+            <suite classname="org.scalatest.fixture.FixtureSuiteSpec" />
+            <suite classname="org.scalatest.fixture.GoodiesSuiteSpec" />
+            <suite classname="org.scalatest.StackFlatSpec" />
+            <suite classname="org.scalatest.StackWordSpec" />
+            <suite classname="org.scalatest.WordSpecSpec" />
+            <suite classname="org.scalatestexamples.TVFeatureSpec" />
+            <suite classname="org.scalatest.AmpersandWordSpec" />
+            <suite classname="org.scalatest.LoginUiWordSpec" />
+            <suite classname="org.scalatest.StackFlatSpec" />
+            <suite classname="org.scalatest.SpecSpec" />
+            <suite classname="org.scalatest.FlatSpecSpec" />
+            <suite classname="org.scalatest.fixture.GoodiesSuiteSpec" />
+            <suite classname="org.scalatest.fixture.FixtureSuiteSpec" />
+            <suite classname="org.scalatest.SpecSpec" />
+            <suite classname="org.scalatest.FunSuiteSpec" />
+            <suite classname="org.scalatest.SuiteSpec" />
+-->
+        </scalatest>
+<!--
+        <scalatest runpath="${build.tests};${classes}" haltonfailure="true">
+            <reporter type="stdout" />
+            <suite classname="org.scalatest.CatchReporterSuite" />
+        </scalatest>
+-->
+    </target>
+
+    <target name="runsuite" depends="compile,copyprops,taskdefscalatest"
+            description="run a specified suite (use -Dclass=classname)">
+
+        <fail message="class not defined (use -Dclass=classname)"
+              unless="class" />
+
+        <scalatest runpath="${build.tests};${classes}" haltonfailure="true">
+            <!--<reporter type="graphic"/>-->
+            <reporter type="stdout" config="ND"/>
+            <suite classname="${class}"/>
+        </scalatest>
+    </target>
+
+    <target name="runexample" depends="compile,copyprops,taskdefscalatest"
+            description="run a specified suite (use -Dclass=classname)">
+
+        <fail message="class not defined (use -Dclass=classname)"
+              unless="class" />
+
+        <scalatest runpath="${build.examples};${classes}" haltonfailure="true">
+<!--
+            <property name="tempFileName" value="TempFile.txt"/>
+-->
+            <excludes>SlowTest</excludes>
+            <reporter type="graphic"/>
+            <reporter type="stdout"/>
+            <suite classname="${class}"/>
+        </scalatest>
+    </target>
+
+
+    <path id="example.class.path">
+        <pathelement location="${dist}/lib/scalatest.jar" />
+        <pathelement location="${classes}" />
+        <pathelement location="${build.tests}" />
+        <path refid="lib.path"></path>
+    </path>
+
+
+    <target name="testng-example" depends="dist">
+        <run-example package="org.scalatest.testng.example" />
+    </target>
+
+    <target name="junit-example" depends="dist">
+        <run-example package="org.scalatest.junit.example" />
+    </target>
+
+    <macrodef name="run-example">
+        <attribute name="package" />
+        <sequential>
+            <java classname="org.scalatest.tools.Runner" classpathref="example.class.path" fork="true">
+
+                <arg value="-p" />
+                <arg value="${build.tests} ${classes}" />
+
+                <arg value="-g" />
+                <arg value="-o" />
+
+                <arg value="-m" />
+                <arg value="@{package}" />
+            </java>
+        </sequential>
+    </macrodef>
+
+    <target name="allfiles" depends="dist, doc, demo" />
+
+    <target name="instrument" depends="compile">
+      <taskdef classpathref="cobertura.class.path" resource="tasks.properties"/>
+      <!--
+        Remove the coverage data file and any old instrumentation.
+      -->
+      <delete file="cobertura.ser"/>
+      <delete dir="${instrumented}" />
+
+      <!--
+        Instrument the application classes, writing the
+        instrumented classes into ${build.instrumented.dir}.
+      -->
+      <cobertura-instrument todir="${instrumented}">
+        <!--
+          The following line causes instrument to ignore any
+          source line containing a reference to log4j, for the
+          purposes of coverage reporting.
+        -->
+        <ignore regex="org.apache.log4j.*" />
+
+        <fileset dir="${jar.contents}">
+          <include name="**/*.class" />
+        </fileset>
+      </cobertura-instrument>
+    </target>
+
+
+    <target name="ant-task-test" depends="compile,taskdefscalatest">
+        <scalatest runpath="${build.tests};${classes}" haltonfailure="true">
+            <runpath>
+                <pathelement location="dist" />
+            </runpath>
+            <runpathurl url="http://foo.com/bar.jar" />
+
+            <suite classname="org.scalatest.SuiteSuite" />
+            
+            <reporter type="stdout" />
+            <reporter type="graphic" />
+        </scalatest>
+    </target>
+
+    <target name="jar" depends="dist"></target>
+
+    <target name="jarsrc">
+      <jar jarfile="${build}/scalatest-sources.jar">
+        <fileset dir="src/main/scala"/>
+        <fileset dir="src/main/java"/>
+        <fileset dir="src/main/resources" includes="org/**"/>
+        <fileset dir="src/examples/scala"/>
+        <fileset dir="src/examples/java"/>
+      </jar>
+    </target>
+
+    <!--
+      - Deploy to remote repository.
+      -
+      - Requires username and password for repository to be defined in your
+      - ~/.m2/settings.xml file, e.g.:
+      -
+      -   <servers>
+      -     <server>
+      -       <id>scala-tools.org</id>
+      -       <username>username</username>
+      -       <password>password</password>
+      -     </server>
+      -   </servers>
+      - 
+      -->
+    <target name="deploy" depends="jar,jarsrc,doc">
+        <path id="maven-ant-tasks.classpath"
+              path="lib/maven-ant-tasks-2.0.10.jar" />
+        <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+                 uri="antlib:org.apache.maven.artifact.ant"
+                 classpathref="maven-ant-tasks.classpath" />
+
+        <copy file="pom.xml" todir="${build}" overwrite="true">
+            <filterset>
+                <filter token="RELEASE" value="${release}" />
+            </filterset>
+        </copy>
+
+        <jar jarfile="${build}/scalatest-scaladoc.jar" basedir="${doc}"/>
+        <jar jarfile="${build}/scalatest-javadoc.jar"  basedir="${jdoc}"/>
+
+        <artifact:deploy file="${dist}/lib/scalatest.jar">
+            <pom file="${build}/pom.xml"/>
+            <attach file="${build}/scalatest-sources.jar"
+                    classifier="sources"/>
+            <attach file="${build}/scalatest-scaladoc.jar"
+                    classifier="scaladoc"/>
+            <attach file="${build}/scalatest-javadoc.jar"
+                    classifier="javadoc"/>
+        </artifact:deploy>
+    </target>
+
+    <target name="test-junit">
+        <junit>
+           <batchtest fork="yes" todir="target/argh">
+                <fileset dir="${build.examples}">
+                    <include name="org/scalatestexamples/junit/*Suite.class"/>
+                </fileset>
+                <formatter type="xml"/>
+                <formatter type="plain"/>
+            </batchtest>
+ <!--
+            <test name="org.scalatestexamples.junit.JUnitTestCaseSuite">
+                <formatter type="xml"/>
+            </test>
+-->
+            <classpath>
+                <pathelement location="${classes}" />
+                <pathelement location="${build.examples}" />
+                <pathelement location="${lib}/scala-library.jar" />
+                <pathelement location="${lib}/junit-4.4.jar" />
+                <pathelement location="${lib}/scalacheck_2.8.0-1.7.jar" />
+                <pathelement location="${lib}/mockito-all-1.6.jar" />
+                <pathelement location="${lib}/testng-5.7-jdk15.jar" />
+                <pathelement location="${lib}/jmock-2.5.1.jar" />
+                <pathelement location="${lib}/easymock-2.5.1.jar" />
+                <pathelement location="${lib}/hamcrest-all-1.1.jar" />
+                <pathelement location="${lib}/commons-io-1.3.2.jar" />
+            </classpath>
+        </junit>
+    </target>
+</project>
+
