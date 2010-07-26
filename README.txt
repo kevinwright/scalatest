@@ -1,3 +1,12 @@
+This is a git-based clone of the underlying svn repository at 
+https://scalatest.dev.java.net/svn/scalatest/branches/app/trunk-for-scala-2.8h
+
+the libs directory has been removed, and instead it uses maven-ant-tasks for dependency management
+
+
+--- original documentation follows ---
+
+
 ScalaTest 1.0
 
 ScalaTest is a free, open-source testing toolkit for Scala and
