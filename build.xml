@@ -1,6 +1,15 @@
 <project name="ScalaTest" default="dist" basedir="."
          xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
+    <path id="maven-ant-tasks.classpath" path="ant-lib/maven-ant-tasks-2.1.1.jar" />
+    <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+             uri="antlib:org.apache.maven.artifact.ant"
+             classpathref="maven-ant-tasks.classpath" />
+
+
+	<property name="scala.version" value="2.8.0" />
+
+
     <!-- set global properties for this build -->
     <property name="scalasrc" value="src/main/scala" />
     <property name="javasrc" value="src/main/java" />
@@ -10,6 +19,7 @@
     <property name="javasrc.examples" value="src/examples/java" />
     <property name="resources" value="src/main/resources" />
     <property name="images" value="${resources}/images" />
+
     <property name="build" value="target" />
     <property name="jar.contents" value="${build}/jar_contents" />
     <!-- classes go in jar.contents. redundant, but makes the rest of build.xml easier to read -->
@@ -28,11 +38,11 @@
     <property name="jdoc" value="${build}/jdoc" />
     <property name="zipper" value="zipper" />
     <property name="project.name" value="ScalaTest" />
-    <property name="release" value="1.2.1-SNAPSHOT" />
+    <property name="release" value="1.2-for-scala-${scala.version}-SNAPSHOT" />
     <property name="demo" value="${build}/demo" />
     <property name="demodoc" value="${demo}/example/javadoc" />
     <property name="example" value="${demo}/example" />
-    <property name="lib" value="lib" />
+
     <property name="jvmargs" value="-Xmx2000M -Xss10M"/>
 
     <!--
@@ -55,10 +65,10 @@
         <mkdir dir="${jdoc}" />
         <mkdir dir="${jdoc}" />
 
-        <path id="lib.path">
-            <fileset dir="${lib}"><include name="**/*.jar" /></fileset>
-        </path>        
-        
+	    <artifact:dependencies pathId="lib.path" useScope="test">
+	      <pom file="pom.xml"/>
+	    </artifact:dependencies>
+	
         <path id="build.class.path">
             <pathelement location="${classes}" />
             <path refid="lib.path"></path>
@@ -67,6 +77,7 @@
         <!-- this is the class path used to run ScalaTest to test itself, in the "test" target -->
         <path id="test.class.path">
             <pathelement location="${classes}" />
+			<pathelement location="${build.examples}" />
             <path refid="lib.path"></path>
         </path>
         
@@ -83,21 +94,21 @@
         </path>
 
         <path id="build.generators.class.path">
-            <pathelement location="${lib}/stringtemplate.jar" />
-            <pathelement location="${lib}/scala-library.jar" />
+            <pathelement location="${org.antlr:stringtemplate:jar}" />
+            <pathelement location="${org.scala-lang:scala-library:jar}" />
         </path>
 
         <path id="run.generators.class.path">
             <pathelement location="${build.generators}" />
-            <pathelement location="${lib}/scala-library.jar" />
-            <pathelement location="${lib}/stringtemplate.jar" />
-            <pathelement location="${lib}/antlr-2.7.7.jar" />
+            <pathelement location="${org.scala-lang:scala-library:jar}" />
+            <pathelement location="${org.antlr:stringtemplate:jar}" />
+            <pathelement location="${org.antlr:antlr:jar}" />
         </path>
 
         <taskdef resource="scala/tools/ant/antlib.xml">
             <classpath>
-                <pathelement location="${lib}/scala-compiler.jar" />
-                <pathelement location="${lib}/scala-library.jar" />
+                <pathelement location="${org.scala-lang:scala-library:jar}" />
+                <pathelement location="${org.scala-lang:scala-compiler:jar}" />
             </classpath>
         </taskdef>
 
@@ -107,38 +118,22 @@
         </path>
 
         <path id="cobertura.class.path">
-          <pathelement location="${lib}/cobertura.jar" />
-          <pathelement location="${lib}/asm-3.0.jar" />
-          <pathelement location="${lib}/asm-tree-3.0.jar" />
-          <pathelement location="${lib}/jakarta-oro-2.0.8.jar" />
-          <pathelement location="${lib}/log4j-1.2.9.jar" />
+          <pathelement location="${net.sourceforge.cobertura:cobertura:jar}" />
+          <pathelement location="${asm:asm:jar}" />
+          <pathelement location="${asm:asm-tree:jar}" />
+          <pathelement location="${oro:oro:jar}" />
+          <pathelement location="${log4j:log4j:jar}" />
         </path>
 
     </target>
 
     <target name="taskdefscalatest">
         <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
-            <classpath>
-                <pathelement location="${classes}" />
-                <pathelement location="${lib}/scala-library.jar" />
-                <pathelement location="${lib}/junit-4.4.jar" />
-                <pathelement location="${lib}/scalacheck_2.8.0-1.7.jar" />
-                <pathelement location="${lib}/mockito-all-1.6.jar" />
-                <pathelement location="${lib}/testng-5.7-jdk15.jar" />
-                <pathelement location="${lib}/jmock-2.5.1.jar" />
-                <pathelement location="${lib}/easymock-2.5.1.jar" />
-                <pathelement location="${lib}/easymockclassextension-2.4.jar" />
-                <pathelement location="${lib}/cglib-nodep-2.2.jar" />
-                <pathelement location="${lib}/hamcrest-all-1.1.jar" />
-                <pathelement location="${lib}/commons-io-1.3.2.jar" />
-                <pathelement location="${lib}/jmock-legacy-2.5.1.jar" />
-                <pathelement location="${lib}/objenesis-1.0.jar" />
-                <pathelement location="${lib}/test-interface-0.5.jar" />
-            </classpath>
+            <classpath refid="lib.path" />
         </taskdef>
     </target>
 
-    <target name="clean" depends="init">
+    <target name="clean">
         <delete dir="${build}" />
         <delete dir="test-output" quiet="true" />
     </target>
@@ -180,7 +175,7 @@
         <scalac srcdir="${build.generated.tests}" destdir="${build.tests}" target="jvm-1.5" classpathref="build.test.class.path" addparams="-no-specialization" fork="true" jvmargs="${jvmargs}" />
 
         <!-- Compile the Java code from ${javasrc.test} into ${build.tests} -->
-        <javac srcdir="${javasrc.test}" destdir="${build.tests}" memoryMaximumSize="1500M" fork="true" classpath="${classes}:${lib}/scala-library.jar:${lib}/junit-4.4.jar" debug="yes" />
+        <javac srcdir="${javasrc.test}" destdir="${build.tests}" memoryMaximumSize="1500M" fork="true" classpath="${classes}:${org.scala-lang:scala-library:jar}:${junit:junit:jar}" debug="yes" />
     </target>
 
     <target name="compile-examples" depends="compile-main">
@@ -189,14 +184,14 @@
         <scalac srcdir="${scalasrc.examples}:${javasrc.examples}" destdir="${build.examples}" target="jvm-1.5" classpathref="build.test.class.path" addparams="-no-specialization" fork="true" jvmargs="${jvmargs} -XX:+UseConcMarkSweepGC"/>
 
         <!-- Compile the Java code from ${examples} into ${build.examples} -->
-        <javac srcdir="${javasrc.examples}" destdir="${build.examples}" classpath="${classes}:${lib}/easymock-2.5.1.jar:${lib}/scala-library.jar" debug="yes" />
+        <javac srcdir="${javasrc.examples}" destdir="${build.examples}" classpath="${classes}:${org.easymock:easymock:jar}:${org.scala-lang:scala-library:jar}" debug="yes" />
     </target>
 
     <!-- Compile demo into its own directory. I.e., the class files will sit alongside the java files
        so that people can more easily look at them. All of these source files are used as demonstrations
        of something, usually described in articles on Artima.com. -->
     <target name="demo" depends="dist">
-        <javac srcdir="${example}" destdir="${example}" classpath="${classes}:${lib}/junit-3.8.1.jar" debug="yes" />
+        <javac srcdir="${example}" destdir="${example}" classpath="${classes}:${junit:junit:jar}" debug="yes" />
     </target>
 
     <target name="jartests" depends="compile">
@@ -213,7 +208,7 @@
       <javadoc sourcepath="${example}"
         destdir="${demodoc}"
         packagenames="com.artima.examples.*"
-        classpath="${classes}:${lib}/junit-4.1.jar"
+        classpath="${classes}:${junit:junit:jar}"
         windowtitle="ScalaTest Examples ${release}"
         doctitle="ScalaTest Examples ${release}"
         bottom="Copyright (C) 2001-2009 Artima, Inc. All rights reserved."/>
@@ -623,11 +618,6 @@
       - 
       -->
     <target name="deploy" depends="jar,jartests,jarsrc,jartestsrc,doc">
-        <path id="maven-ant-tasks.classpath"
-              path="lib/maven-ant-tasks-2.0.10.jar" />
-        <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
-                 uri="antlib:org.apache.maven.artifact.ant"
-                 classpathref="maven-ant-tasks.classpath" />
 
         <copy file="pom.xml" todir="${build}" overwrite="true">
             <filterset>
@@ -667,19 +657,7 @@
                 <formatter type="xml"/>
             </test>
 -->
-            <classpath>
-                <pathelement location="${classes}" />
-                <pathelement location="${build.examples}" />
-                <pathelement location="${lib}/scala-library.jar" />
-                <pathelement location="${lib}/junit-4.4.jar" />
-                <pathelement location="${lib}/scalacheck_2.8.0-1.7.jar" />
-                <pathelement location="${lib}/mockito-all-1.6.jar" />
-                <pathelement location="${lib}/testng-5.7-jdk15.jar" />
-                <pathelement location="${lib}/jmock-2.5.1.jar" />
-                <pathelement location="${lib}/easymock-2.5.1.jar" />
-                <pathelement location="${lib}/hamcrest-all-1.1.jar" />
-                <pathelement location="${lib}/commons-io-1.3.2.jar" />
-            </classpath>
+            <classpath refid="test.class.path" />
         </junit>
     </target>
 </project>
