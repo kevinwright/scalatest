@@ -1,8 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
+  <properties>
+      <scala.version>scala.version.injected.from.ant</scala.version>
+
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>        
+  </properties>
+	
   <groupId>org.scalatest</groupId>
   <artifactId>scalatest</artifactId>
-  <version>@RELEASE@</version>
+  <version>1.2-for-scala-${scala.version}-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>ScalaTest</name>
   <url>http://www.artima.com/scalatest/</url>
@@ -16,13 +24,116 @@
   </licenses>
   <inceptionYear>2009</inceptionYear>
 
+  <repositories>
+      <repository>
+          <id>scala-tools-releases</id>
+          <url>http://www.scala-tools.org/repo-releases/</url>
+      </repository>        
+      <repository>
+          <id>scala-tools-snapshots</id>
+          <url>http://www.scala-tools.org/repo-snapshots/</url>
+      </repository>        
+  </repositories>
+
   <dependencies>
+	<dependency>
+	  <groupId>org.apache.commons</groupId>
+	  <artifactId>commons-io</artifactId>
+	  <version>1.3.2</version>
+	</dependency>
+
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>2.8.0.RC6</version>
+      <version>${scala.version}</version>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-compiler</artifactId>
+      <version>${scala.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scala-tools.testing</groupId>
+      <artifactId>test-interface</artifactId>
+      <version>0.5</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>asm</groupId>
+      <artifactId>asm-tree</artifactId>
+      <version>3.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>stringtemplate</artifactId>
+      <version>3.2</version>
+      <scope>provided</scope>
+	  <optional/>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scala-tools.testing</groupId>
+      <artifactId>scalacheck_${scala.version}</artifactId>
+      <version>1.7</version>
+      <scope>provided</scope>
+      <optional/>
+    </dependency>
+
+    <dependency>
+      <groupId>net.sourceforge.cobertura</groupId>
+      <artifactId>cobertura</artifactId>
+      <version>1.9.1</version>
+      <scope>test</scope>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymockclassextension</artifactId>
+      <version>2.5.1</version>
+      <scope>provided</scope>
+      <optional/>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jmock</groupId>
+      <artifactId>jmock-legacy</artifactId>
+      <version>2.5.1</version>
+      <scope>provided</scope>
+      <optional/>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>1.6</version>
+      <scope>provided</scope>
+      <optional/>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>5.7</version>
+	  <classifier>jdk15</classifier>
+      <scope>provided</scope>
+      <optional/>
+    </dependency>
+
+	<dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.4</version>
+      <scope>provided</scope>
+      <optional/>
+	</dependency>
   </dependencies>
 
   <distributionManagement>
