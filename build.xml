@@ -595,6 +595,12 @@
       </jar>
     </target>
 
+    <target name="jartestsrc">
+      <jar jarfile="${build}/scalatest-test-sources.jar">
+        <fileset dir="src/test/scala"/>
+        <fileset dir="src/test/java"/>
+      </jar>
+    </target>
     <!--
       - Deploy to remote repository.
       -
@@ -610,7 +616,7 @@
       -   </servers>
       - 
       -->
-    <target name="deploy" depends="jar,jarsrc,doc">
+    <target name="deploy" depends="jar,jartests,jarsrc,jartestsrc,doc">
 
         <copy file="pom.xml" todir="${build}" overwrite="true">
             <filterset>
@@ -623,8 +629,12 @@
 
         <artifact:deploy file="${dist}/lib/scalatest.jar">
             <pom file="${build}/pom.xml"/>
+            <attach file="${build.tests.jar}"
+                    type="test-jar"/>
             <attach file="${build}/scalatest-sources.jar"
                     classifier="sources"/>
+            <attach file="${build}/scalatest-test-sources.jar"
+                    classifier="test-sources"/>					
             <attach file="${build}/scalatest-scaladoc.jar"
                     classifier="scaladoc"/>
             <attach file="${build}/scalatest-javadoc.jar"
