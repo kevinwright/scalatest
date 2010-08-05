@@ -28,7 +28,7 @@
     <property name="jdoc" value="${build}/jdoc" />
     <property name="zipper" value="zipper" />
     <property name="project.name" value="ScalaTest" />
-    <property name="release" value="1.2" />
+    <property name="release" value="1.3-SNAPSHOT" />
     <property name="demo" value="${build}/demo" />
     <property name="demodoc" value="${demo}/example/javadoc" />
     <property name="example" value="${demo}/example" />
@@ -600,6 +600,13 @@
       </jar>
     </target>
 
+    <target name="jartestsrc">
+      <jar jarfile="${build}/scalatest-test-sources.jar">
+        <fileset dir="src/test/scala"/>
+        <fileset dir="src/test/java"/>
+      </jar>
+    </target>
+
     <!--
       - Deploy to remote repository.
       -
@@ -615,7 +622,7 @@
       -   </servers>
       - 
       -->
-    <target name="deploy" depends="jar,jarsrc,doc">
+    <target name="deploy" depends="jar,jartests,jarsrc,jartestsrc,doc">
         <path id="maven-ant-tasks.classpath"
               path="lib/maven-ant-tasks-2.0.10.jar" />
         <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
@@ -633,8 +640,12 @@
 
         <artifact:deploy file="${dist}/lib/scalatest.jar">
             <pom file="${build}/pom.xml"/>
+            <attach file="${build.tests.jar}"
+                    type="test-jar"/>
             <attach file="${build}/scalatest-sources.jar"
                     classifier="sources"/>
+            <attach file="${build}/scalatest-test-sources.jar"
+                    classifier="test-sources"/>
             <attach file="${build}/scalatest-scaladoc.jar"
                     classifier="scaladoc"/>
             <attach file="${build}/scalatest-javadoc.jar"
