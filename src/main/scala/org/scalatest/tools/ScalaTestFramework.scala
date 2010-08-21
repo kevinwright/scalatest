@@ -31,15 +31,26 @@ class ScalaTestFramework extends Framework {
       if (isAccessibleSuite(testClass)) {
 
         val (propertiesArgsList, includesArgsList,
-        excludesArgsList /*testNGArgsList*/ ) = parsePropsAndTags(args.filter(!_.equals("")))
+        excludesArgsList, repoArg) = parsePropsAndTags(args.filter(!_.equals("")))
         val propertiesMap: Map[String, String] = parsePropertiesArgsIntoMap(propertiesArgsList)
         val tagsToInclude: Set[String] = parseCompoundArgIntoSet(includesArgsList, "-n")
         val tagsToExclude: Set[String] = parseCompoundArgIntoSet(excludesArgsList, "-l")
         val filter = org.scalatest.Filter(if (tagsToInclude.isEmpty) None else Some(tagsToInclude), tagsToExclude)
 
+        val (presentAllDurations, presentInColor, presentTestFailedExceptionStackTraces) =
+          repoArg match {
+            case Some(arg) => (
+              arg contains 'D',
+              !(arg contains 'W'),
+              arg contains 'F'
+             )
+             case None => (false, true, false)
+          }
+
         //  def run(testName: Option[String], reporter: Reporter, stopper: Stopper, filter: Filter,
         //              configMap: Map[String, Any], distributor: Option[Distributor], tracker: Tracker) {
-        testClass.newInstance.run(None, new ScalaTestReporter(eventHandler), new Stopper {},
+        val repo = new ScalaTestReporter(eventHandler, presentAllDurations, presentInColor, presentTestFailedExceptionStackTraces)
+        testClass.newInstance.run(None, repo, new Stopper {},
           filter, propertiesMap, None, new Tracker)
       }
       else throw new IllegalArgumentException("Class is not an accessible org.scalatest.Suite: " + testClassName)
@@ -71,11 +82,11 @@ class ScalaTestFramework extends Framework {
 
     private def logDebug(msg: String) = loggers.foreach(_ debug msg)
 
-    private class ScalaTestReporter(eventHandler: EventHandler) extends StringReporter(false, true, false) {
-      import org.scalatest.events._
+    private class ScalaTestReporter(eventHandler: EventHandler, presentAllDurations: Boolean,
+        presentInColor: Boolean, presentTestFailedExceptionStackTraces: Boolean) extends StringReporter(
+        presentAllDurations, presentInColor, presentTestFailedExceptionStackTraces) {
 
-      // Later pass this into ScalaTestReporter constructor, after looking for it in the args
-      val presentInColor = true
+      import org.scalatest.events._
 
       protected def printPossiblyInColor(text: String, ansiColor: String) {
         import PrintReporter.ansiReset
@@ -128,6 +139,7 @@ class ScalaTestFramework extends Framework {
       val props = new ListBuffer[String]()
       val includes = new ListBuffer[String]()
       val excludes = new ListBuffer[String]()
+      var repoArg: Option[String] = None
 
       val it = args.elements
       while (it.hasNext) {
@@ -147,6 +159,10 @@ class ScalaTestFramework extends Framework {
           if (it.hasNext)
             excludes += it.next
         }
+        else if (s.startsWith("-o")) {
+          if (repoArg.isEmpty) // Just use first one. Ignore any others.
+            repoArg = Some(s)
+        }
         //      else if (s.startsWith("-t")) {
         //
         //        testNGXMLFiles += s
@@ -157,7 +173,7 @@ class ScalaTestFramework extends Framework {
           throw new IllegalArgumentException("Unrecognized argument: " + s)
         }
       }
-      (props.toList, includes.toList, excludes.toList)
+      (props.toList, includes.toList, excludes.toList, repoArg)
     }
   }
 }
