@@ -4,26 +4,28 @@ import org.scalatools.testing._
 import org.scalatest.tools.Runner.parsePropertiesArgsIntoMap
 import org.scalatest.tools.Runner.parseCompoundArgIntoSet
 
-class ScalaTestFramework extends Framework
-{
+class ScalaTestFramework extends Framework {
+
   def name = "ScalaTest"
 
-  def tests = Array(new org.scalatools.testing.TestFingerprint {
-    def superClassName = "org.scalatest.Suite"
-
-    def isModule = false
-  })
+  def tests =
+    Array(
+      new org.scalatools.testing.TestFingerprint {
+        def superClassName = "org.scalatest.Suite"
+        def isModule = false
+      }
+    )
 
   def testRunner(testLoader: ClassLoader, loggers: Array[Logger]) = {
     new ScalaTestRunner(testLoader, loggers)
   }
 
   /**The test runner for ScalaTest suites. It is compiled in a second step after the rest of sbt.*/
-  private[tools] class ScalaTestRunner(val testLoader: ClassLoader, val loggers: Array[Logger]) extends Runner {
+  private[tools] class ScalaTestRunner(val testLoader: ClassLoader, val loggers: Array[Logger]) extends org.scalatools.testing.Runner {
 
     import org.scalatest._
 
-    def run(testClassName: String, fingerprint: TestFingerprint, eventListener: EventHandler, args: Array[String]) {
+    def run(testClassName: String, fingerprint: TestFingerprint, eventHandler: EventHandler, args: Array[String]) {
       val testClass = Class.forName(testClassName, true, testLoader).asSubclass(classOf[Suite])
 
       if (isAccessibleSuite(testClass)) {
@@ -37,10 +39,10 @@ class ScalaTestFramework extends Framework
 
         //  def run(testName: Option[String], reporter: Reporter, stopper: Stopper, filter: Filter,
         //              configMap: Map[String, Any], distributor: Option[Distributor], tracker: Tracker) {
-        testClass.newInstance.run(None, new ScalaTestReporter(eventListener), new Stopper {},
+        testClass.newInstance.run(None, new ScalaTestReporter(eventHandler), new Stopper {},
           filter, propertiesMap, None, new Tracker)
       }
-      else throw new IllegalArgumentException("class is not an org.scalatest.Suite or something: " + testClassName)
+      else throw new IllegalArgumentException("Class is not an accessible org.scalatest.Suite: " + testClassName)
     }
 
     private val emptyClassArray = new Array[java.lang.Class[T] forSome {type T}](0)
@@ -69,12 +71,21 @@ class ScalaTestFramework extends Framework
 
     private def logDebug(msg: String) = loggers.foreach(_ debug msg)
 
-    private class ScalaTestReporter(eventListener: EventHandler) extends Reporter with NotNull
-    {
+    private class ScalaTestReporter(eventHandler: EventHandler) extends StringReporter(false, true, false) {
       import org.scalatest.events._
-      var succeeded = true
 
-      def newEvent(tn: String, r: Result, e: Option[Throwable]) = {
+      // Later pass this into ScalaTestReporter constructor, after looking for it in the args
+      val presentInColor = true
+
+      protected def printPossiblyInColor(text: String, ansiColor: String) {
+        import PrintReporter.ansiReset
+        logInfo(if (presentInColor) ansiColor + text + ansiReset else text)
+      }
+
+      def dispose() = ()
+
+      def fireEvent(tn: String, r: Result, e: Option[Throwable]) = {
+/*
         r match {
           case Result.Skipped => logInfo("Test Skipped: " + tn)
           case Result.Failure =>
@@ -82,44 +93,33 @@ class ScalaTestFramework extends Framework
             e.foreach {logTrace(_)}
           case Result.Success => logInfo("Test Passed: " + tn)
         }
-        eventListener.handle(new org.scalatools.testing.Event {
-          def testName = tn
-
-          def description = tn
-
-          def result = r
-
-          def error = e getOrElse null
-        })
+*/
+        eventHandler.handle(
+          new org.scalatools.testing.Event {
+            def testName = tn
+            def description = tn
+            def result = r
+            def error = e getOrElse null
+          }
+        )
       }
 
-      def apply(event: Event) {
+      override def apply(event: Event) {
+
+        // Superclass will call printPossiblyInColor
+        super.apply(event)
+
+        // Logging done, all I need to do now is fire events
         event match {
-
-        // just log this
-          case t: TestStarting => logInfo("Test Starting: " + t.testName)
-
           // the results of running an actual test
-          case t: TestPending => newEvent(t.testName, Result.Skipped, None)
-          case t: TestFailed => newEvent(t.testName, Result.Failure, t.throwable)
-          case t: TestSucceeded => newEvent(t.testName, Result.Success, None)
-          case t: TestIgnored => newEvent(t.testName, Result.Skipped, None)
-
-          // just log on these, no events because they aren't related to a single test case.
-          case s: SuiteCompleted => logInfo("Suite Completed: " + s.suiteName)
-          case s: SuiteAborted => logError("Suite Aborted: " + s.suiteName)
-          case s: SuiteStarting => logInfo("Suite Starting: " + s.suiteName)
-          case ip: InfoProvided => logInfo(ip.message)
-
-          // i dont think these guys even happen when we run a single suite
-          case rc: RunCompleted =>
-          case rs: RunStarting =>
-          case rs: RunStopped =>
-          case ra: RunAborted =>
+          case t: TestPending => fireEvent(t.testName, Result.Skipped, None)
+          case t: TestFailed => fireEvent(t.testName, Result.Failure, t.throwable)
+          case t: TestSucceeded => fireEvent(t.testName, Result.Success, None)
+          case t: TestIgnored => fireEvent(t.testName, Result.Skipped, None)
+          case _ => 
         }
       }
     }
-
 
     private[scalatest] def parsePropsAndTags(args: Array[String]) = {
 
@@ -160,6 +160,4 @@ class ScalaTestFramework extends Framework
       (props.toList, includes.toList, excludes.toList)
     }
   }
-
-
 }
