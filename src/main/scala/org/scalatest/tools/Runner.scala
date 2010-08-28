@@ -31,6 +31,8 @@ import org.scalatest.testng.TestNGWrapperSuite
 import java.util.concurrent.Semaphore
 import org.scalatest.events._
 import org.scalatest.junit.JUnitWrapperSuite
+import java.util.concurrent.Executors
+import java.util.concurrent.ExecutorService
 
 /**
  * <p>
@@ -1499,8 +1501,18 @@ object Runner {
           dispatch(RunStarting(tracker.nextOrdinal(), expectedTestCount, configMap))
 
           if (concurrent) {
+
+            // Because some tests may do IO, will create a pool of 2 times the number of processors reported
+            // by the Runtime's availableProcessors method.
+            val poolSize =
+              if (numThreads > 0) numThreads
+              else Runtime.getRuntime.availableProcessors * 2
+
+            val execSvc: ExecutorService = Executors.newFixedThreadPool(poolSize)
+            try {
+
             if (System.getProperty("org.scalatest.tools.Runner.forever", "false") == "true") {
-              val distributor = new ConcurrentDistributor(dispatch, stopRequested, filter, configMap, numThreads)
+              val distributor = new ConcurrentDistributor(dispatch, stopRequested, filter, configMap, execSvc)
               while (true) {
                 for (suite <- suiteInstances) {
                   distributor.apply(suite, tracker.nextTracker())
@@ -1509,11 +1521,15 @@ object Runner {
               }
             }
             else {
-              val distributor = new ConcurrentDistributor(dispatch, stopRequested, filter, configMap, numThreads)
+              val distributor = new ConcurrentDistributor(dispatch, stopRequested, filter, configMap, execSvc)
               for (suite <- suiteInstances) {
                 distributor.apply(suite, tracker.nextTracker())
               }
               distributor.waitUntilDone()
+            }
+            }
+            finally {
+              execSvc.shutdown()
             }
           }
           else {
