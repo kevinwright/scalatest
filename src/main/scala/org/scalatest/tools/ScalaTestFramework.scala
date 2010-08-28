@@ -72,6 +72,7 @@ class ScalaTestFramework extends Framework {
       }
     }
 
+/*
     private def logTrace(t: Throwable) = loggers.foreach(_ trace t)
 
     private def logError(msg: String) = loggers.foreach(_ error msg)
@@ -79,8 +80,7 @@ class ScalaTestFramework extends Framework {
     private def logWarn(msg: String) = loggers.foreach(_ warn msg)
 
     private def logInfo(msg: String) = loggers.foreach(_ info msg)
-
-    private def logDebug(msg: String) = loggers.foreach(_ debug msg)
+*/
 
     private class ScalaTestReporter(eventHandler: EventHandler, presentAllDurations: Boolean,
         presentInColor: Boolean, presentTestFailedExceptionStackTraces: Boolean) extends StringReporter(
@@ -90,7 +90,9 @@ class ScalaTestFramework extends Framework {
 
       protected def printPossiblyInColor(text: String, ansiColor: String) {
         import PrintReporter.ansiReset
-        logInfo(if (presentInColor) ansiColor + text + ansiReset else text)
+        loggers.foreach { logger =>
+          logger.info(if (logger.ansiCodesSupported && presentInColor) ansiColor + text + ansiReset else text)
+        }
       }
 
       def dispose() = ()
