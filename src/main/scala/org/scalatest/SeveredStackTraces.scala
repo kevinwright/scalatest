@@ -1,6 +1,6 @@
 package org.scalatest
 
-trait TruncatedStackTraces extends AbstractSuite { this: Suite =>
+trait SeveredStackTraces extends AbstractSuite { this: Suite =>
 
   abstract override def withFixture(test: NoArgTest) {
     try {
