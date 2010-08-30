@@ -290,7 +290,7 @@ import java.util.concurrent.ExecutorService
  * (In other words, the absence of a <code>-n</code> option is like a wildcard, indicating all tests be included.)
  * If tags to include is specified, then only those tests whose tags are mentioned in the argument following <code>-n</code>
  * and not mentioned in the tags to exclude, will be executed. For more information on test tags, see
- * the <a href="Suite.html">documentation for <code>Suite</code></a>. Here are some examples:
+ * the <a href="../Suite.html">documentation for <code>Suite</code></a>. Here are some examples:
  * </p>
  *
  * <p>
@@ -311,7 +311,7 @@ import java.util.concurrent.ExecutorService
  * the <code>Suite</code>s you specify with <code>-s</code>. <code>Runner</code> will set up a thread pool to execute any <code>Suite</code>s
  * passed to the <code>Distributor</code>'s <code>put</code> method concurrently. Trait <code>Suite</code>'s implementation of
  * <code>runNestedSuites</code> will place any nested <code>Suite</code>s into this <code>Distributor</code>. Thus, if you have a <code>Suite</code>
- * of tests that must be executed sequentially, you should override <code>runNestedSuites</code> as described in the <a href="Distributor.html">documentation for <code>Distributor</code></a>.
+ * of tests that must be executed sequentially, you should override <code>runNestedSuites</code> as described in the <a href="../Distributor.html">documentation for <code>Distributor</code></a>.
  * </p>
  *
  * <p>
