@@ -58,4 +58,9 @@ trait StackDepth { this: Throwable =>
     }
     else None
   }
+
+  /*
+   * Returns an exception of the same class with <code>failedExceptionStackDepth</code> 
+   */
+  // def severedAtStackDepth: StackDepth
 }
