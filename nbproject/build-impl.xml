@@ -18,12 +18,13 @@ is divided into following sections:
   - applet
   - cleanup
 
+        
         -->
 <project xmlns:jaxrpc="http://www.netbeans.org/ns/scala-project/jax-rpc" xmlns:scalaProject1="http://www.netbeans.org/ns/scala-project/1" basedir=".." default="default" name="ScalaTest-impl">
     <target depends="test,jar,javadoc" description="Build and test whole project." name="default"/>
-    <!-- 
+    <!--
                 ======================
-                INITIALIZATION SECTION 
+                INITIALIZATION SECTION
                 ======================
             -->
     <target name="-pre-init">
@@ -39,10 +40,10 @@ is divided into following sections:
             <isset property="env.SCALA_HOME"/>
         </condition>
         <fail unless="scala.home">
-You must set SCALA_HOME or environment property and append "-J-Dscala.home=scalahomepath"
-property to the end of "netbeans_default_options" in NetBeansInstallationPath/etc/netbeans.conf to point to
-Scala installation directory.
-</fail>
+                    You must set SCALA_HOME or environment property and append "-J-Dscala.home=scalahomepath"
+                    property to the end of "netbeans_default_options" in NetBeansInstallationPath/etc/netbeans.conf to point to
+                    Scala installation directory.
+                </fail>
         <property name="scala.compiler" value="${scala.home}/lib/scala-compiler.jar"/>
         <property name="scala.library" value="${scala.home}/lib/scala-library.jar"/>
         <property name="scala.lib" value="${scala.home}/lib"/>
@@ -57,8 +58,8 @@ Scala installation directory.
         <property file="${user.properties.file}"/>
         <!-- The two properties below are usually overridden -->
         <!-- by the active platform. Just a fallback. -->
-        <property name="default.javac.source" value="1.4"/>
-        <property name="default.javac.target" value="1.4"/>
+        <property name="default.javac.source" value="1.5"/>
+        <property name="default.javac.target" value="1.5"/>
     </target>
     <target depends="-pre-init,-init-private,-init-user" name="-init-project">
         <property file="nbproject/configs/${config}.properties"/>
@@ -127,6 +128,7 @@ Scala installation directory.
         <property name="javadoc.encoding.used" value="${source.encoding}"/>
         <property name="includes" value="**"/>
         <property name="excludes" value=""/>
+        <property name="extdirs" value=" "/>
         <property name="do.depend" value="false"/>
         <condition property="do.depend.true">
             <istrue value="${do.depend}"/>
@@ -178,6 +180,9 @@ Scala installation directory.
                 <javac debug="@{debug}" deprecation="${javac.deprecation}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" includeantruntime="false" includes="@{includes}" source="${javac.source}" sourcepath="@{sourcepath}" srcdir="@{srcdir}" target="${javac.target}">
                     <classpath>
                         <path path="@{classpath}"/>
+                        <fileset dir="${scala.lib}">
+                            <include name="**/*.jar"/>
+                        </fileset>
                     </classpath>
                     <compilerarg line="${javac.compilerargs} ${javac.compilerargs.jaxws}"/>
                     <customize/>
@@ -191,7 +196,13 @@ Scala installation directory.
             <sequential>
                 <depend cache="${build.dir}/depcache" destdir="@{destdir}" excludes="${excludes}" includes="${includes}" srcdir="@{srcdir}">
                     <classpath>
-                        <path path="@{classpath}"/>
+                        <path>
+                            <pathelement path="@{classpath}"/>
+                            <fileset dir="${scala.lib}">
+                                <include name="**/*.jar"/>
+                            </fileset>
+                            <pathelement location="${build.classes.dir}"/>
+                        </path>
                     </classpath>
                 </depend>
             </sequential>
@@ -217,34 +228,25 @@ Scala installation directory.
             <attribute default="${src.dir}:${generators.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
+            <attribute default="${extdirs}" name="extdirs"/>
             <attribute default="${includes}" name="includes"/>
             <attribute default="${excludes}" name="excludes"/>
-            <attribute default="jvm-${javac.debug}" name="debug"/>
-            <attribute default="${javac.compilerargs}" name="addparams"/>
+            <attribute default="${scalac.compilerargs}" name="addparams"/>
             <attribute default="" name="sourcepath"/>
             <element name="customize" optional="true"/>
             <sequential>
-                <scalac addparams="@{addparams}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" includes="@{includes}" sourcepath="@{sourcepath}" srcdir="@{srcdir}" target="jvm-${javac.target}">
+                <scalac addparams="-make:transitive -dependencyfile &quot;${basedir}/${build.dir}/.scala_dependencies&quot; @{addparams}" deprecation="${scalac.deprecation}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" extdirs="@{extdirs}" force="yes" fork="true" includes="@{includes}" sourcepath="@{sourcepath}" srcdir="@{srcdir}" target="jvm-${javac.target}" unchecked="${scalac.unchecked}">
                     <classpath>
-                        <path path="@{classpath}"/>
-                        <fileset dir="${scala.lib}">
-                            <include name="**/*.jar"/>
-                        </fileset>
+                        <path>
+                            <pathelement path="@{classpath}"/>
+                            <fileset dir="${scala.lib}">
+                                <include name="**/*.jar"/>
+                            </fileset>
+                            <pathelement location="${build.classes.dir}"/>
+                        </path>
                     </classpath>
                     <customize/>
                 </scalac>
-            </sequential>
-        </macrodef>
-        <macrodef name="depend" uri="http://www.netbeans.org/ns/scala-project/1">
-            <attribute default="${src.dir}:${generators.dir}" name="srcdir"/>
-            <attribute default="${build.classes.dir}" name="destdir"/>
-            <attribute default="${javac.classpath}" name="classpath"/>
-            <sequential>
-                <depend cache="${build.dir}/depcache" destdir="@{destdir}" excludes="${excludes}" includes="${includes}" srcdir="@{srcdir}">
-                    <classpath>
-                        <path path="@{classpath}"/>
-                    </classpath>
-                </depend>
             </sequential>
         </macrodef>
         <macrodef name="force-recompile" uri="http://www.netbeans.org/ns/scala-project/1">
@@ -382,7 +384,7 @@ Scala installation directory.
             </jar>
         </presetdef>
     </target>
-    <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-scalac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-java,-init-presetdef-jar" name="init"/>
+    <target depends="-pre-init,-init-private ,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-scalac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-java,-init-presetdef-jar" name="init"/>
     <!--
                 ===================
                 COMPILATION SECTION
@@ -401,9 +403,10 @@ Scala installation directory.
     </target>
     <target depends="init,deps-jar,-pre-pre-compile,-pre-compile,-compile-depend" if="have.sources" name="-do-compile">
         <scalaProject1:scalac/>
+        <scalaProject1:javac/>
         <copy todir="${build.classes.dir}">
-            <fileset dir="${src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${generators.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${src.dir}" excludes="${build.classes.excludes},${excludes}&#10;                        " includes="${includes}"/>
+            <fileset dir="${generators.dir}" excludes="${build.classes.excludes},${excludes}&#10;                        " includes="${includes}"/>
         </copy>
     </target>
     <target name="-post-compile">
@@ -457,7 +460,8 @@ Scala installation directory.
             <path path="${run.classpath}"/>
             <map from="${build.classes.dir.resolved}" to="${dist.jar.resolved}"/>
         </pathconvert>
-        <echo>java -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
+        <echo>java -cp "${run.classpath.with.dist.jar}" ${main.class}
+                </echo>
     </target>
     <target depends="init,compile,-pre-pre-jar,-pre-jar" if="manifest.available+main.class+mkdist.available" name="-do-jar-with-libraries">
         <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
@@ -482,7 +486,8 @@ Scala installation directory.
         </copylibs>
         <echo>To run this application from the command line without Ant, try:</echo>
         <property location="${dist.jar}" name="dist.jar.resolved"/>
-        <echo>java -jar "${dist.jar.resolved}"</echo>
+        <echo>java -jar "${dist.jar.resolved}"
+                </echo>
     </target>
     <target name="-post-jar">
         <!-- Empty placeholder for easier customization. -->
@@ -548,17 +553,14 @@ Scala installation directory.
             -->
     <target depends="init" name="-javadoc-build">
         <mkdir dir="${dist.javadoc.dir}"/>
-        <javadoc additionalparam="${javadoc.additionalparam}" author="${javadoc.author}" charset="UTF-8" destdir="${dist.javadoc.dir}" docencoding="UTF-8" encoding="${javadoc.encoding.used}" failonerror="true" noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" notree="${javadoc.notree}" private="${javadoc.private}" source="${javac.source}" splitindex="${javadoc.splitindex}" use="${javadoc.use}" useexternalfile="true" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}">
+        <scaladoc addparams="${javadoc.additionalparam}" deprecation="yes" destdir="${dist.javadoc.dir}" doctitle="${javadoc.windowtitle}" encoding="${javadoc.encoding.used}" srcdir="${src.dir}" unchecked="yes">
             <classpath>
                 <path path="${javac.classpath}"/>
+                <fileset dir="${scala.lib}">
+                    <include name="**/*.jar"/>
+                </fileset>
             </classpath>
-            <fileset dir="${src.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
-            <fileset dir="${generators.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
-        </javadoc>
+        </scaladoc>
     </target>
     <target depends="init,-javadoc-build" if="netbeans.home" name="-javadoc-browse" unless="no.javadoc.preview">
         <nbbrowse file="${dist.javadoc.dir}/index.html"/>
@@ -580,9 +582,9 @@ Scala installation directory.
         <scalaProject1:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.src.dir}"/>
     </target>
     <target depends="init,compile,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend" if="have.tests" name="-do-compile-test">
-        <scalaProject1:scalac classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" srcdir="${test.src.dir}"/>
+        <scalaProject1:scalac classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.src.dir}"/>
         <copy todir="${build.test.classes.dir}">
-            <fileset dir="${test.src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${test.src.dir}" excludes="${build.classes.excludes},${excludes}&#10;                        " includes="${includes}"/>
         </copy>
     </target>
     <target name="-post-compile-test">
@@ -597,9 +599,9 @@ Scala installation directory.
     <target depends="init,compile,-pre-pre-compile-test,-pre-compile-test-single" if="have.tests" name="-do-compile-test-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <scalaProject1:force-recompile destdir="${build.test.classes.dir}"/>
-        <scalaProject1:scalac classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" sourcepath="${test.src.dir}" srcdir="${test.src.dir}"/>
+        <scalaProject1:scalac classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" sourcepath="${test.src.dir}" srcdir="${test.src.dir}"/>
         <copy todir="${build.test.classes.dir}">
-            <fileset dir="${test.src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${test.src.dir}" excludes="${build.classes.excludes},${excludes}&#10;                        " includes="${includes}"/>
         </copy>
     </target>
     <target name="-post-compile-test-single">
