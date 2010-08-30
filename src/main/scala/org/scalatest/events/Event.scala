@@ -80,7 +80,7 @@ sealed abstract class Event extends Ordered[Event] {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="TestStarting$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="TestStarting$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>TestStarting</code> event like this:
  * </p>
  *
@@ -279,7 +279,7 @@ object TestStarting {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="TestSucceeded$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="TestSucceeded$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>TestSucceeded</code> event like this:
  * </p>
  *
@@ -512,7 +512,7 @@ object TestSucceeded {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="TestFailed$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="TestFailed$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>TestFailed</code> event like this:
  * </p>
  *
@@ -780,7 +780,7 @@ object TestFailed {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="TestIgnored$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="TestIgnored$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>TestIgnored</code> event like this:
  * </p>
  *
@@ -934,7 +934,7 @@ object TestIgnored {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="TestPending$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="TestPending$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>TestPending</code> event like this:
  * </p>
  *
@@ -1093,7 +1093,7 @@ object TestPending {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="SuiteStarting$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="SuiteStarting$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>SuiteStarting</code> event like this:
  * </p>
  *
@@ -1284,7 +1284,7 @@ object SuiteStarting {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="SuiteCompleted$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="SuiteCompleted$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>SuiteCompleted</code> event like this:
  * </p>
  *
@@ -1507,7 +1507,7 @@ object SuiteCompleted {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="SuiteAborted$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="SuiteAborted$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>SuiteAborted</code> event like this:
  * </p>
  *
@@ -1765,7 +1765,7 @@ object SuiteAborted {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="RunStarting$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="RunStarting$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>RunStarting</code> event like this:
  * </p>
  *
@@ -1927,7 +1927,7 @@ object RunStarting {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="RunCompleted$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="RunCompleted$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>RunCompleted</code> event like this:
  * </p>
  *
@@ -2124,7 +2124,7 @@ object RunCompleted {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="RunStopped$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="RunStopped$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>RunStopped</code> event like this:
  * </p>
  *
@@ -2311,7 +2311,7 @@ object RunStopped {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="RunAborted$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="RunAborted$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>RunAborted</code> event like this:
  * </p>
  *
@@ -2519,7 +2519,7 @@ object RunAborted {
  *
  * <p>
  * To create instances of this class you may
- * use one of the factory methods provided in its <a href="InfoProvided$object.html">companion object</a>. For example, given a
+ * use one of the factory methods provided in its <a href="InfoProvided$.html">companion object</a>. For example, given a
  * report function named <code>report</code>, you could fire a <code>InfoProvided</code> event like this:
  * </p>
  *

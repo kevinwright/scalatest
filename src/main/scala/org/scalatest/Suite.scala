@@ -178,7 +178,7 @@ import org.scalatest.tools.StandardOutReporter
  * Two other <code>execute</code> methods that are intended to be run from the interpreter accept a "config" map of key-value
  * pairs (see <a href="#configMapSection">Config map</a>, below). Each of these <code>execute</code> methods invokes a <code>run</code> method takes seven
  * parameters. This <code>run</code> method, which actually executes the suite, will usually be invoked by a test runner, such
- * as <code>org.scalatest.tools.Runner</code> or an IDE. See the <a href="tools/Runner$object.html">documentation
+ * as <code>org.scalatest.tools.Runner</code> or an IDE. See the <a href="tools/Runner$.html">documentation
  * for <code>Runner</code></a> for more detail.
  * </p>
  *
@@ -241,7 +241,7 @@ import org.scalatest.tools.StandardOutReporter
  * If you're familiar with JUnit, you would use <code>===</code>
  * in a ScalaTest <code>Suite</code> where you'd use <code>assertEquals</code> in a JUnit <code>TestCase</code>.
  * The <code>===</code> operator is made possible by an implicit conversion from <code>Any</code>
- * to <code>Equalizer</code>. If you're curious to understand the mechanics, see the <a href="Assertions.Equalizer.html">documentation for
+ * to <code>Equalizer</code>. If you're curious to understand the mechanics, see the <a href="Assertions$Equalizer.html">documentation for
  * <code>Equalizer</code></a> and the <code>convertToEqualizer</code> method.
  * </p>
  *
@@ -445,7 +445,7 @@ import org.scalatest.tools.StandardOutReporter
  *
  * <p>
  * Note that <code>Runner</code> can discover <code>Suite</code>s automatically, so you need not
- * necessarily specify <code>SuperSuite</code>s explicitly. See the <a href="tools/Runner$object.html">documentation
+ * necessarily specify <code>SuperSuite</code>s explicitly. See the <a href="tools/Runner$.html">documentation
  * for <code>Runner</code></a> for more information.
  * </p>
  *
@@ -794,7 +794,7 @@ import org.scalatest.tools.StandardOutReporter
  * <p>
  * You can specify a string config object is via the ScalaTest <code>Runner</code>, either via the command line
  * or ScalaTest's ant task.
- * (See the <a href="tools/Runner$object.html#configMapSection">documentation for Runner</a> for information on how to specify 
+ * (See the <a href="tools/Runner$.html#configMapSection">documentation for Runner</a> for information on how to specify 
  * config objects on the command line.)
  * The config map is passed to <code>run</code>, <code>runNestedSuites</code>, <code>runTests</code>, and <code>runTest</code>,
  * so one way to access it in your suite is to override one of those methods. If you need to use the config map inside your tests, you

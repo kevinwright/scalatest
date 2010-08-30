@@ -85,7 +85,7 @@ import _root_.junit.framework.AssertionFailedError
  *
  * <p>
  * For details on the importing approach, see the documentation
- * for the <a href="AssertionsForJUnit$object.html"><code>AssertionsForJUnit</code> companion object</a>.
+ * for the <a href="AssertionsForJUnit$.html"><code>AssertionsForJUnit</code> companion object</a>.
  * For the details on the <code>AssertionsForJUnit</code> syntax, see the Scaladoc documentation for
  * <a href="../Assertions.html"><code>org.scalatest.Assertions</code></a>
  * </p>

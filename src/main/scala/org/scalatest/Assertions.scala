@@ -24,7 +24,7 @@ import scala.reflect.Manifest
  * You can use the assertions provided by this trait in any ScalaTest <code>Suite</code>, because <code>Suite</code>
  * mixes in this trait. This trait is designed to be used independently of anything else in ScalaTest, though, so you
  * can mix it into anything. (You can alternatively import the methods defined in this trait. For details, see the documentation
- * for the <a href="Assertions$object.html"><code>Assertions</code> companion object</a>.
+ * for the <a href="Assertions$.html"><code>Assertions</code> companion object</a>.
  * </p>
  *
  * <p>
@@ -84,7 +84,7 @@ import scala.reflect.Manifest
  * If you're familiar with JUnit, you would use <code>===</code>
  * in a ScalaTest <code>Suite</code> where you'd use <code>assertEquals</code> in a JUnit <code>TestCase</code>.
  * The <code>===</code> operator is made possible by an implicit conversion from <code>Any</code>
- * to <code>Equalizer</code>. If you're curious to understand the mechanics, see the <a href="Assertions.Equalizer.html">documentation for
+ * to <code>Equalizer</code>. If you're curious to understand the mechanics, see the <a href="Assertions$Equalizer.html">documentation for
  * <code>Equalizer</code></a> and the <code>convertToEqualizer</code> method.
  * </p>
  *

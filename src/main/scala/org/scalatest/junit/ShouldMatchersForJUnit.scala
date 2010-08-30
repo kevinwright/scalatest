@@ -86,7 +86,7 @@ import org.scalatest.matchers.ShouldMatchers
  *
  * <p>
  * For details on the importing approach, see the documentation
- * for the <a href="ShouldMatchersForJUnit$object.html"><code>ShouldMatchersForJUnit</code> companion object</a>.
+ * for the <a href="ShouldMatchersForJUnit$.html"><code>ShouldMatchersForJUnit</code> companion object</a>.
  * For the details on the <code>ShouldMatchersForJUnit</code> syntax, see the Scaladoc documentation for
  * <a href="../matchers/ShouldMatchers.html"><code>org.scalatest.matchers.ShouldMatchers</code></a>
  * </p>
