@@ -4,10 +4,23 @@ import org.scalatools.testing._
 import org.scalatest.tools.Runner.parsePropertiesArgsIntoMap
 import org.scalatest.tools.Runner.parseCompoundArgIntoSet
 
+/**
+ * Class that makes ScalaTest tests visible to sbt.
+ *
+ * @author Josh Cough
+ * @author Bill Venners
+ */
 class ScalaTestFramework extends Framework {
 
+  /**
+   * Returns <code>"ScalaTest"</code>, the human readable name for this test framework.
+   */
   def name = "ScalaTest"
 
+  /**
+   * Returns an array containing one <code>org.scalatools.testing.TestFingerprint</code> object, whose superclass name is <code>org.scalatest.Suite</code>
+   * and <code>isModule</code> value is false.
+   */
   def tests =
     Array(
       new org.scalatools.testing.TestFingerprint {
@@ -16,6 +29,10 @@ class ScalaTestFramework extends Framework {
       }
     )
 
+  /**
+   * Returns an <code>org.scalatools.testing.Runner</code> that will load test classes via the passed <code>testLoader</code>
+   * and direct output from running the tests to the passed array of <code>Logger</code>s.
+   */
   def testRunner(testLoader: ClassLoader, loggers: Array[Logger]) = {
     new ScalaTestRunner(testLoader, loggers)
   }
